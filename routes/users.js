@@ -11,15 +11,20 @@ const router = express.Router();
 
 // bible routes started
 
-router.get("/getVersion", bibleController.getBibleVersion);
-router.get("/getBooksVersesByID/:version_id", bibleController.getBibleBooksByVersion);
-router.post("/getVerses", bibleController.getBibleVerses);
-router.post("/saveBibleVerses", bibleController.saveBibleVerses);
-router.get("/getBibleVerseOfTheDay", bibleController.getBibleVerseOfTheDay);
+router.get("/getVersion",auth, bibleController.getBibleVersion);
+router.get("/getBooksVersesByID/:version_id",auth, bibleController.getBibleBooksByVersion);
+router.post("/getVerses",auth, bibleController.getBibleVerses);
+router.post("/saveBibleVerses",auth, bibleController.saveBibleVerses);
+router.post("/saveEditedBibleVerses",auth, bibleController.saveEditedBibleVerses);
+router.post("/addFriends",auth, bibleController.addFriends);
+router.post("/getBibleVersesByKeyword",auth, bibleController.getBibleVersesByKeyword);
 
-
-
-
+router.get("/getBibleVerseOfTheDay",auth, bibleController.getBibleVerseOfTheDay);
+router.get("/getBibleVerseOfTheDay",auth, bibleController.getBibleVerseOfTheDay);
+router.get("/getPastRandomVerses",auth, bibleController.getPastRandomVerses);
+router.get("/getSavedVerses",auth, bibleController.getSavedVerses);
+router.get("/getEditedVerses",auth, bibleController.getEditedVerses);
+router.get("/getFreidns",auth, bibleController.getFreidns);
 
 router.post("/signUp", userController.signUp);
 
@@ -48,7 +53,6 @@ router.get("/new_users", auth, userController.new_users);
 router.get("/users_nearby", auth, userController.users_nearby);
 
 router.get("/verifyUser/:id", userController.verifyUserEmail);
-
 
 
 router.post("/Add_favorites", auth, userController.Add_favorites);

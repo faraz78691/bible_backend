@@ -12,9 +12,10 @@ const auth = async (req, res, next) => {
       const userdata = verifyUser.data.id
       console.log(verifyUser, "user verify");
 
-      const user = await fetchUserById({ id: verifyUser.data.id });
-
+      const user = await fetchUserById(verifyUser.data.id );
+console.log(user);
       if (user !== null) {
+        req.user_id = user[0].id
         next();
       }
       else {

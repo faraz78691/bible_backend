@@ -1,5 +1,6 @@
 module.exports = {
-  base_url: "http://44.199.1.149:4000",
+  // base_url: "http://44.199.1.149:4000",
+  base_url: "http://192.168.1.18:4000",
   APPLICATION_KEY: "36628df3-b8a4-4131-a55a-cf0bbcd31307",
   APPLICATION_SECRET: "lU06Q2Luc0WvHN5RDPKkyg==",
   googledistance_key: "AIzaSyB0V1g5YyGB_NE1Lw1QitZZGECA5-1Xnng",

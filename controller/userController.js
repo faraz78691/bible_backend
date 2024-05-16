@@ -231,8 +231,8 @@ var transporter = nodemailer.createTransport({
   port: 587,
   // secure: true,
   auth: {
-    user: "xderdating@gmail.com",
-    pass: "yhhjfpkzxyfbxvnb",
+    user: "mohdfaraz.ctinfotech@gmail.com",
+    pass: "lpwbmjbdfiynjnif",
   },
 });
 
@@ -264,14 +264,12 @@ exports.signUp = async (req, res) => {
         password: Joi.string().min(8).max(15).required().messages({
           "any.required": "{{#label}} is required!!",
           "string.empty": "can't be empty!!",
-          "string.min": "minimum 8 value required",
-          "string.max": "maximum 15 values allowed",
         }),
-        first_name: Joi.string().min(8).max(15).required().messages({
+        first_name: Joi.string().required().messages({
           "any.required": "{{#label}} is required!!",
           "string.empty": "can't be empty!!",
         }),
-        last_name: Joi.string().min(8).max(15).required().messages({
+        last_name: Joi.string().required().messages({
           "any.required": "{{#label}} is required!!",
           "string.empty": "can't be empty!!",
         }),
@@ -303,7 +301,7 @@ exports.signUp = async (req, res) => {
         var otp = generateOTP();
         if (!result.error) {
           let mailOptions = {
-            from: "xderdating@gmail.com",
+            from: "mohdfaraz.ctinfotech@gmail.com",
             to: email,
             subject: "Activate Account",
             template: "signupemail",
@@ -330,16 +328,16 @@ exports.signUp = async (req, res) => {
                 act_token: act_token,
 
               };
-           
-                const create_user = await registerUser(user);
-                return res.json({
-                  success: true,
-                  message:
-                    "A verification link has been sent to your email . please confirm your account by click on the link " +
-                    `${email}`,
-                  status: 200,
-                });
-              
+
+              const create_user = await registerUser(user);
+              return res.json({
+                success: true,
+                message:
+                  "A verification link has been sent to your email . please confirm your account by click on the link " +
+                  `${email}`,
+                status: 200,
+              });
+
             }
           });
         } else {
@@ -449,8 +447,8 @@ exports.verifyUserEmail = async (req, res) => {
           datas.act_token,
           data[0]?.id
         );
+        console.log("result verfify user", result);
 
-      
 
         if (result.affectedRows) {
           res.sendFile(__dirname + "/view/verify.html");
@@ -579,10 +577,10 @@ exports.loginUser = async (req, res) => {
           "string.min": "minimum 8 value required",
           "string.max": "maximum 15 values allowed",
         }),
-      
+
       })
     );
-    const result = schema.validate({ email, password, fcm_token });
+    const result = schema.validate({ email, password });
 
     if (result.error) {
       const message = result.error.details.map((i) => i.message).join(",");
@@ -615,11 +613,11 @@ exports.loginUser = async (req, res) => {
                   const results = await updateToken(hash, email);
 
                   return res.json({
-                      status: 200,
-                      success: true,
-                      message: "Login successful!",
-                      token: toke,
-                      user_info: data2[0],
+                    status: 200,
+                    success: true,
+                    message: "Login successful!",
+                    token: toke,
+                    user_info: data[0],
                   });
                 });
               });
