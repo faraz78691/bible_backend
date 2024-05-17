@@ -25,6 +25,11 @@ router.get("/getPastRandomVerses",auth, bibleController.getPastRandomVerses);
 router.get("/getSavedVerses",auth, bibleController.getSavedVerses);
 router.get("/getEditedVerses",auth, bibleController.getEditedVerses);
 router.get("/getFreidns",auth, bibleController.getFreidns);
+router.get("/testaments",auth, bibleController.testament);
+router.post("/getChapters",auth, bibleController.getChapters);
+router.post("/getBooksByVersion",auth, bibleController.getBooksByVersion);
+router.post("/getChaptersNo",auth, bibleController.getChaptersNo);
+router.post("/getVerseNo",auth, bibleController.getVerseNo);
 
 router.post("/signUp", userController.signUp);
 

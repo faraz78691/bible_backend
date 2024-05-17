@@ -92,9 +92,9 @@ exports.getBibleVersion = async (req, res, next) => {
 
 exports.getBibleVerses = async (req, res, next) => {
     try {
-        const { table_name, verse_no } = req.body;
+        const { table_name, book_name, chatperNo, verse_number } = req.body;
 
-        const result = await getData(table_name, `where verse_number = '${verse_no}'`);
+        const result = await getData(table_name, `where book_name = '${book_name}' and chapter = ${chatperNo} and verse_number = ${verse_number}`);
         if (result.length === 0) {
             // User not found
             return res.json({
@@ -123,7 +123,7 @@ exports.getBibleVerses = async (req, res, next) => {
 
 exports.saveBibleVerses = async (req, res, next) => {
     try {
-        const { verse_number, verse, notes } = req.body;
+        const { verse_number, verse,book_name,chapter, notes } = req.body;
         const user_id = req.user_id;
 
         const schema = Joi.alternatives(
@@ -132,6 +132,8 @@ exports.saveBibleVerses = async (req, res, next) => {
                 // password: passwordComplexity(complexityOptions),
                 verse_number: [Joi.string().empty().required()],
                 verse: [Joi.string().empty().required()],
+                book_name: [Joi.string().empty().required()],
+                chapter: [Joi.string().empty().required()],
                 notes: [Joi.string().optional(), Joi.allow(null)]
 
             })
@@ -151,8 +153,10 @@ exports.saveBibleVerses = async (req, res, next) => {
                 version: "KJV",
                 verse_number: verse_number,
                 verse: verse,
+                book_name: book_name,
+                chapter: chapter,
                 notes: notes,
-                user_id:user_id
+                user_id: user_id
 
             };
             const result = await insertData('saved_verses', user, '');
@@ -203,7 +207,7 @@ exports.saveEditedBibleVerses = async (req, res, next) => {
                 verse_number: verse_number,
                 verse: verse,
                 notes: notes,
-                user_id:user_id
+                user_id: user_id
 
             };
             const result = await insertData('edited_verse', user, '');
@@ -229,13 +233,15 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
     try {
 
         const getRandonResult = await getData('random_verse', `where created_at = CURRENT_DATE`);
-    
+
         if (getRandonResult.length === 0) {
-            const generateRandom = await getData('kjv_bible', `order by rand() limit 1`);
-           
+            const generateRandom = await getData('kjvbible', `order by rand() limit 1`);
+
             const random = {
                 verse_number: generateRandom[0].verse_number,
-                verse: generateRandom[0].verse
+                verse: generateRandom[0].verse,
+                book_name: generateRandom[0].book_name,
+                chapter: generateRandom[0].chapter
             }
             const insertRandonData = await insertData('random_verse', random, '')
             // User not found
@@ -266,7 +272,7 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
 
 exports.getPastRandomVerses = async (req, res, next) => {
     try {
-    
+
         const result = await getData('random_verse', '');
         if (result.length === 0) {
             // User not found
@@ -355,7 +361,7 @@ exports.getEditedVerses = async (req, res, next) => {
 exports.addFriends = async (req, res, next) => {
     try {
         const user_id = req.user_id;
-        const { name,email } = req.body;
+        const { name, email } = req.body;
 
         const schema = Joi.alternatives(
             Joi.object({
@@ -363,7 +369,7 @@ exports.addFriends = async (req, res, next) => {
                 // password: passwordComplexity(complexityOptions),
                 name: [Joi.string().empty().required()],
                 email: [Joi.string().empty().required()]
-             
+
             })
         );
         const validateResult = schema.validate(req.body);
@@ -378,10 +384,10 @@ exports.addFriends = async (req, res, next) => {
             });
         } else {
             const user = {
-                user_id:user_id,
+                user_id: user_id,
                 name: name,
                 email: email
-              
+
 
             };
             const result = await insertData('friends_list', user, '');
@@ -436,10 +442,11 @@ exports.getFreidns = async (req, res, next) => {
 
 exports.getBibleVersesByKeyword = async (req, res, next) => {
     try {
-        const { table_name, keyword } = req.body;
+        const { table_name,book_name, keyword } = req.body;
+    
         console.log(keyword);
 
-        const result = await getData(table_name, `where verse  LIKE '%${keyword}%'`);
+        const result = await getData(table_name, `where book_name = '${book_name}' and verse  LIKE '%${keyword}%'`);
         if (result.length === 0) {
             // User not found
             return res.json({
@@ -463,4 +470,166 @@ exports.getBibleVersesByKeyword = async (req, res, next) => {
             error: error.message,
         });
     }
-}
+};
+
+
+exports.testament = async (req, res, next) => {
+    try {
+
+        const result = await getData('old_testament', '');
+        const result2 = await getData('new_testament', '');
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Unable to know amount of cash in bank",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+                data2: result2,
+            });
+        }
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+exports.getChapters = async (req, res, next) => {
+    try {
+        const { table_name, book_name, chatperNo } = req.body;
+
+        const result = await getData(table_name, `where book_name = '${book_name}' AND chapter = ${chatperNo}`);
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+
+exports.getBooksByVersion = async (req, res, next) => {
+    try {
+        const { table_name } = req.body;
+
+        const result = await getSelectedColumn('book_name', table_name, `GROUP by book_name ORDER by id ASC`);
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+
+
+exports.getChaptersNo = async (req, res, next) => {
+    try {
+        const { table_name, book_name } = req.body;
+
+        const result = await getSelectedColumn('chapter', table_name, `where book_name = '${book_name}' GROUP by chapter ORDER by id ASC`);
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+exports.getVerseNo = async (req, res, next) => {
+    try {
+        const { table_name, book_name, chatperNo } = req.body;
+
+        const result = await getSelectedColumn('verse_number', table_name, `where book_name = '${book_name}' and chapter = ${chatperNo}`);
+        
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+
+
