@@ -36,6 +36,7 @@ router.post("/signUp", userController.signUp);
 router.post("/social_login", userController.social_login);
 
 router.post("/loginUser", userController.loginUser);
+router.post("/loginAdmin", userController.loginAdmin);
 
 router.post("/get_all_users", auth, userController.get_all_users);
 

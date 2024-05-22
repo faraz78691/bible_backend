@@ -3,8 +3,8 @@ module.exports = {
   insertData: async (table,data, where) => {
     return db.query(`insert into ${table} set ? ${where}`,[data]);
   },
-  updateData: async (table, where, data) => {
-    return db.query(`update ${table} SET ${data} ${where}`, [data]);
+  updateData: async (table, data, where) => {
+    return db.query(`update ${table} SET ? ${where}`, [data]);
   },
   getData: async (table, where) => {
     return db.query(`select * from ${table} ${where}`);
@@ -23,4 +23,5 @@ module.exports = {
     const query = `SELECT * FROM tags ${where} ORDER BY id DESC`;
     return db.query(query);
  },
+
 };

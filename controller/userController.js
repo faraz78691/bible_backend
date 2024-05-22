@@ -661,6 +661,103 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+exports.loginAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const token = generateToken();
+    const schema = Joi.alternatives(
+      Joi.object({
+        email: [Joi.string().empty().required()],
+        password: Joi.string().min(8).max(15).required().messages({
+          "any.required": "{{#label}} is required!!",
+          "string.empty": "can't be empty!!",
+          "string.min": "minimum 8 value required",
+          "string.max": "maximum 15 values allowed",
+        }),
+
+      })
+    );
+    const result = schema.validate({ email, password });
+
+    if (result.error) {
+      const message = result.error.details.map((i) => i.message).join(",");
+      return res.json({
+        message: result.error.details[0].message,
+        error: message,
+        missingParams: result.error.details[0].message,
+        status: 400,
+        success: false,
+      });
+    } else {
+      const data = await getData('admin',`where email = ${email}`);
+      if (data.length !== 0) {
+        if (data[0]?.act_token === "" && data[0]?.access_level === 1) {
+          if (email === data[0].email) {
+            const match = bcrypt.compareSync(password, data[0]?.password);
+            if (match) {
+              const toke = jwt.sign(
+                {
+                  data: {
+                    id: data[0].id,
+                  },
+                },
+                "SecretKey"
+                // { expiresIn: "1d" }
+              );
+              bcrypt.genSalt(saltRounds, async function (err, salt) {
+                bcrypt.hash(token, salt, async function (err, hash) {
+                  if (err) throw err;
+                  const results = await updateAdminToken(hash, email);
+
+                  return res.json({
+                    status: 200,
+                    success: true,
+                    message: "Login successful!",
+                    token: toke,
+                    user_info: data[0],
+                  });
+                });
+              });
+            } else {
+              return res.json({
+                success: false,
+                message: "Invalid password.",
+                status: 400,
+              });
+            }
+          } else {
+            return res.json({
+              message: "Account not found. Please check your details",
+              status: 400,
+              success: false,
+            });
+          }
+        } else {
+          return res.json({
+            message: "Login failed. Please verify your account and try again",
+            status: 400,
+            success: false,
+          });
+        }
+      } else {
+        return res.json({
+          success: false,
+          message: "Account not found. Please check your details.",
+          status: 400,
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      success: false,
+      message: "An internal server error occurred. Please try again later.",
+      status: 500,
+      error: error,
+    });
+  }
+};
+
 
 exports.social_login = async (req, res) => {
   try {

@@ -123,7 +123,7 @@ exports.getBibleVerses = async (req, res, next) => {
 
 exports.saveBibleVerses = async (req, res, next) => {
     try {
-        const { verse_number, verse,book_name,chapter, notes } = req.body;
+        const { verse_number, verse, book_name, chapter, notes } = req.body;
         const user_id = req.user_id;
 
         const schema = Joi.alternatives(
@@ -387,8 +387,6 @@ exports.addFriends = async (req, res, next) => {
                 user_id: user_id,
                 name: name,
                 email: email
-
-
             };
             const result = await insertData('friends_list', user, '');
             return res.json({
@@ -442,9 +440,9 @@ exports.getFreidns = async (req, res, next) => {
 
 exports.getBibleVersesByKeyword = async (req, res, next) => {
     try {
-        const { table_name,book_name, keyword } = req.body;
-    
-        console.log(keyword);
+        const { table_name, book_name, keyword } = req.body;
+
+
 
         const result = await getData(table_name, `where book_name = '${book_name}' and verse  LIKE '%${keyword}%'`);
         if (result.length === 0) {
@@ -604,7 +602,7 @@ exports.getVerseNo = async (req, res, next) => {
         const { table_name, book_name, chatperNo } = req.body;
 
         const result = await getSelectedColumn('verse_number', table_name, `where book_name = '${book_name}' and chapter = ${chatperNo}`);
-        
+
 
         if (result.length === 0) {
             // User not found
@@ -630,6 +628,315 @@ exports.getVerseNo = async (req, res, next) => {
         });
     }
 };
+
+
+
+exports.uploadCardTemplate = async (req, res) => {
+    try {
+
+
+
+
+        const user_id = req.user_id;
+        let filename = "";
+        if (req.file) {
+            const file = req.file;
+            filename = file.filename;
+        }
+        const userInfo = await fetchUserBy_Id(user_id);
+        if (userInfo.length !== 0) {
+
+            const data = {
+                image: filename
+            };
+
+
+            const result = await insertData('card_template', data, '');
+            if (result.affectedRows) {
+                return res.json({
+                    message: "update user successfully",
+                    status: 200,
+                    success: true,
+                });
+            } else {
+                return res.json({
+                    message: "update user failed ",
+                    status: 200,
+                    success: false,
+                });
+            }
+        } else {
+            return res.json({
+                messgae: "data not found",
+                status: 200,
+                success: false,
+            });
+        }
+
+    } catch (err) {
+        console.log(err);
+        return res.json({
+            success: false,
+            message: "Internal server error",
+            error: err,
+            status: 500,
+        });
+    }
+};
+
+exports.getCardTemplate = async (req, res, next) => {
+    try {
+
+        const result = await getData('card_template', '');
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+exports.uploadsuggested_links = async (req, res) => {
+    try {
+
+        const { links } = req.body;
+        const schema = Joi.alternatives(
+            Joi.object({
+                // version: [Joi.string().empty().required()],
+                // password: passwordComplexity(complexityOptions),
+                links: [Joi.string().empty().required()]
+            })
+        );
+        const validateResult = schema.validate(req.body);
+        if (validateResult.error) {
+            const message = result.error.details.map((i) => i.message).join(",");
+            return res.json({
+                message: validateResult.error.details[0].message,
+                error: message,
+                missingParams: validateResult.error.details[0].message,
+                status: 400,
+                success: false,
+            });
+        } else {
+            const user_id = req.user_id;
+            let filename = "";
+            if (req.file) {
+                const file = req.file;
+                filename = file.filename;
+            }
+            const userInfo = await fetchUserBy_Id(user_id);
+            if (userInfo.length !== 0) {
+
+                const data = {
+                    image: filename,
+                    links: links
+                };
+
+
+                const result = await insertData('suggested_links', data, '');
+                if (result.affectedRows) {
+                    return res.json({
+                        message: "update user successfully",
+                        status: 200,
+                        success: true,
+                    });
+                } else {
+                    return res.json({
+                        message: "update user failed ",
+                        status: 200,
+                        success: false,
+                    });
+                }
+            } else {
+                return res.json({
+                    messgae: "data not found",
+                    status: 200,
+                    success: false,
+                });
+            }
+        }
+    } catch (err) {
+        console.log(err);
+        return res.json({
+            success: false,
+            message: "Internal server error",
+            error: err,
+            status: 500,
+        });
+    }
+};
+
+exports.getSuggestedLinks = async (req, res, next) => {
+    try {
+
+        const result = await getData('suggested_links', '');
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+exports.updateBanner = async (req, res) => {
+    try {
+    
+   
+
+        const user_id = req.user_id;
+  
+        let filename = "";
+        if (req.file) {
+          const file = req.file;
+          filename = file.filename;
+        }
+  
+        const user_info = await fetchUserBy_Id(id);
+        const updated_info = {
+          name: name ? name : user_info[0]?.name,
+          phone_no: phone_no ? phone_no : user_info[0]?.phone_no,
+          profile_image: filename ? filename : user_info[0]?.image,
+        };
+  
+        const check = await updateUserById(updated_info, id);
+        const data = await fetchUserBy_Id(id);
+        return res.json({
+          status: 200,
+          success: true,
+          message: "User Update Successfull",
+          user_info: data,
+        });
+      
+    } catch (error) {
+      return res.json({
+        success: false,
+        message: "Internal server error",
+        status: 500,
+        error: error,
+      });
+    }
+  };
+
+ 
+  exports.updateBanners = async (req, res, next) => {
+    try {
+       
+        let sidebar_image = false;
+        let small_image = false;
+        let big_image = false;
+   
+        if (req.files.sidebar_image) {
+            sidebar_image = req.files.sidebar_image[0]?.filename;
+        }
+        if (req.files.small_image) {
+            small_image = req.files.small_image[0]?.filename;
+        }
+        if (req.files.big_image) {
+            big_image = req.files.big_image[0]?.filename;
+        }
+      
+
+        const getMisc = await getData('banners', '');
+
+        const updated_info = {
+            sidebar_image: sidebar_image ? sidebar_image : getMisc[0]?.sidebar_image,
+            small_image: small_image ? small_image : getMisc[0]?.small_image,
+            big_image: big_image ? big_image : getMisc[0]?.big_image
+        };
+        const updateHome = await updateData( 'banners',updated_info, 'where id = 1');
+   
+        if (updateHome.affectedRows > 0) {
+            return res.json({
+                status: 200,
+                success: true,
+                message: "Update Successfully",
+            });
+        } else {
+            return res.json({
+                status: 200,
+                success: true,
+                message: "Unable to update",
+            });
+        }
+    } catch (error) {
+    
+        return res.json({
+            success: false,
+            message: "Internal server error",
+            status: 500,
+            error: error,
+        });
+    }
+};
+
+exports.getbanners = async (req, res, next) => {
+    try {
+
+        const result = await getData('banners', '');
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+
+
 
 
 

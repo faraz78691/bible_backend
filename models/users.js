@@ -44,6 +44,9 @@ module.exports = {
   fetchUserByEmail: async (email) => {
     return db.query("select * from users where email = ?", [email]);
   },
+  fetchAdminByEmail: async (email) => {
+    return db.query("select * from admin where email = ?", [email]);
+  },
 
   fetchUserByStatus: async (email) => {
     return db.query("select * from users where email = ?", [email]);
@@ -77,6 +80,13 @@ module.exports = {
 
   updateToken: async (token, email, act_token) => {
     return db.query("Update users set token= ? where email=?", [
+      token,
+      email,
+      act_token,
+    ]);
+  },
+  updateAdminToken: async (token, email, act_token) => {
+    return db.query("Update admin set token= ? where email=?", [
       token,
       email,
       act_token,
