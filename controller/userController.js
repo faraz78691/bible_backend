@@ -71,7 +71,7 @@ const {
   deleteData,
   fetchCount,
   getSelectedColumn,
-  filtertags,
+  filtertags,updateADToken
 } = require("../models/common");
 const { Console } = require("console");
 
@@ -689,9 +689,9 @@ exports.loginAdmin = async (req, res) => {
         success: false,
       });
     } else {
-      const data = await getData('admin',`where email = ${email}`);
-      if (data.length !== 0) {
-        if (data[0]?.act_token === "" && data[0]?.access_level === 1) {
+      const data = await getData('admin',`where email = '${email}'`);
+      console.log("data", data);
+      if (data.length >0) {
           if (email === data[0].email) {
             const match = bcrypt.compareSync(password, data[0]?.password);
             if (match) {
@@ -707,7 +707,7 @@ exports.loginAdmin = async (req, res) => {
               bcrypt.genSalt(saltRounds, async function (err, salt) {
                 bcrypt.hash(token, salt, async function (err, hash) {
                   if (err) throw err;
-                  const results = await updateAdminToken(hash, email);
+                  const results = await updateADToken(hash, email);
 
                   return res.json({
                     status: 200,
@@ -732,13 +732,7 @@ exports.loginAdmin = async (req, res) => {
               success: false,
             });
           }
-        } else {
-          return res.json({
-            message: "Login failed. Please verify your account and try again",
-            status: 400,
-            success: false,
-          });
-        }
+     
       } else {
         return res.json({
           success: false,

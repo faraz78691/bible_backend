@@ -12,8 +12,8 @@ const auth = async (req, res, next) => {
       const userdata = verifyUser.data.id
       console.log(verifyUser, "user verify");
 
-      const user = await fetchUserById(verifyUser.data.id );
-console.log(user);
+      const user = await fetchUserById(verifyUser.data.id);
+      console.log(user);
       if (user !== null) {
         req.user_id = user[0].id
         next();
@@ -40,7 +40,7 @@ console.log(user);
       message: "Access forbidden",
       status: 401,
       success: "0",
-      Error:err
+      Error: err
     });
   }
 };

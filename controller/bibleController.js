@@ -628,6 +628,73 @@ exports.getVerseNo = async (req, res, next) => {
         });
     }
 };
+exports.getshortURl = async (req, res, next) => {
+    try {
+        const { full_url, id } = req.body;
+        // const shortUrl = new ShortUniqueId({ length: 10 });
+        let shortUrl = crypto.createHash('md5').update(full_url).digest("hex")
+        console.log(shortUrl);
+        const updated_info = {
+            full_url: full_url,
+            short_url: shortUrl
+
+        };
+        const result = await updateData('random_verse', updated_info, `where id = ${id}`);
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: shortUrl,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+exports.getFullURl = async (req, res, next) => {
+    try {
+        const { short_url } = req.body;
+      
+        const result = await getData('random_verse', `where short_url = '${short_url}'`);
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
 
 
 
@@ -635,43 +702,32 @@ exports.uploadCardTemplate = async (req, res) => {
     try {
 
 
-
-
-        const user_id = req.user_id;
         let filename = "";
         if (req.file) {
             const file = req.file;
             filename = file.filename;
         }
-        const userInfo = await fetchUserBy_Id(user_id);
-        if (userInfo.length !== 0) {
 
-            const data = {
-                image: filename
-            };
+        const data = {
+            image: filename
+        };
 
 
-            const result = await insertData('card_template', data, '');
-            if (result.affectedRows) {
-                return res.json({
-                    message: "update user successfully",
-                    status: 200,
-                    success: true,
-                });
-            } else {
-                return res.json({
-                    message: "update user failed ",
-                    status: 200,
-                    success: false,
-                });
-            }
+        const result = await insertData('card_template', data, '');
+        if (result.affectedRows) {
+            return res.json({
+                message: "Card template uploaded successfully",
+                status: 200,
+                success: true,
+            });
         } else {
             return res.json({
-                messgae: "data not found",
+                message: "update user failed ",
                 status: 200,
                 success: false,
             });
         }
+
 
     } catch (err) {
         console.log(err);
@@ -736,42 +792,35 @@ exports.uploadsuggested_links = async (req, res) => {
                 success: false,
             });
         } else {
-            const user_id = req.user_id;
+            // const user_id = req.user_id;
             let filename = "";
             if (req.file) {
                 const file = req.file;
                 filename = file.filename;
             }
-            const userInfo = await fetchUserBy_Id(user_id);
-            if (userInfo.length !== 0) {
+            // const userInfo = await fetchUserBy_Id(user_id);
 
-                const data = {
-                    image: filename,
-                    links: links
-                };
+            const data = {
+                image: filename,
+                links: links
+            };
 
 
-                const result = await insertData('suggested_links', data, '');
-                if (result.affectedRows) {
-                    return res.json({
-                        message: "update user successfully",
-                        status: 200,
-                        success: true,
-                    });
-                } else {
-                    return res.json({
-                        message: "update user failed ",
-                        status: 200,
-                        success: false,
-                    });
-                }
+            const result = await insertData('suggested_links', data, '');
+            if (result.affectedRows) {
+                return res.json({
+                    message: "update user successfully",
+                    status: 200,
+                    success: true,
+                });
             } else {
                 return res.json({
-                    messgae: "data not found",
+                    message: "update user failed ",
                     status: 200,
                     success: false,
                 });
             }
+
         }
     } catch (err) {
         console.log(err);
@@ -814,53 +863,13 @@ exports.getSuggestedLinks = async (req, res, next) => {
     }
 };
 
-exports.updateBanner = async (req, res) => {
+exports.updateBanners = async (req, res, next) => {
     try {
-    
-   
 
-        const user_id = req.user_id;
-  
-        let filename = "";
-        if (req.file) {
-          const file = req.file;
-          filename = file.filename;
-        }
-  
-        const user_info = await fetchUserBy_Id(id);
-        const updated_info = {
-          name: name ? name : user_info[0]?.name,
-          phone_no: phone_no ? phone_no : user_info[0]?.phone_no,
-          profile_image: filename ? filename : user_info[0]?.image,
-        };
-  
-        const check = await updateUserById(updated_info, id);
-        const data = await fetchUserBy_Id(id);
-        return res.json({
-          status: 200,
-          success: true,
-          message: "User Update Successfull",
-          user_info: data,
-        });
-      
-    } catch (error) {
-      return res.json({
-        success: false,
-        message: "Internal server error",
-        status: 500,
-        error: error,
-      });
-    }
-  };
-
- 
-  exports.updateBanners = async (req, res, next) => {
-    try {
-       
         let sidebar_image = false;
         let small_image = false;
         let big_image = false;
-   
+
         if (req.files.sidebar_image) {
             sidebar_image = req.files.sidebar_image[0]?.filename;
         }
@@ -870,7 +879,7 @@ exports.updateBanner = async (req, res) => {
         if (req.files.big_image) {
             big_image = req.files.big_image[0]?.filename;
         }
-      
+
 
         const getMisc = await getData('banners', '');
 
@@ -879,8 +888,8 @@ exports.updateBanner = async (req, res) => {
             small_image: small_image ? small_image : getMisc[0]?.small_image,
             big_image: big_image ? big_image : getMisc[0]?.big_image
         };
-        const updateHome = await updateData( 'banners',updated_info, 'where id = 1');
-   
+        const updateHome = await updateData('banners', updated_info, 'where id = 1');
+
         if (updateHome.affectedRows > 0) {
             return res.json({
                 status: 200,
@@ -895,7 +904,7 @@ exports.updateBanner = async (req, res) => {
             });
         }
     } catch (error) {
-    
+
         return res.json({
             success: false,
             message: "Internal server error",

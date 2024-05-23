@@ -6,6 +6,7 @@ const upload_profile = require("../middleware/upload_profile");
 const upload_albums = require("../middleware/upload_albums");
 const upload_group = require("../middleware/upload_group");
 
+
 const router = express.Router();
 
 
@@ -20,7 +21,7 @@ router.post("/addFriends",auth, bibleController.addFriends);
 router.post("/getBibleVersesByKeyword",auth, bibleController.getBibleVersesByKeyword);
 
 router.get("/getBibleVerseOfTheDay",auth, bibleController.getBibleVerseOfTheDay);
-router.get("/getBibleVerseOfTheDay",auth, bibleController.getBibleVerseOfTheDay);
+
 router.get("/getPastRandomVerses",auth, bibleController.getPastRandomVerses);
 router.get("/getSavedVerses",auth, bibleController.getSavedVerses);
 router.get("/getEditedVerses",auth, bibleController.getEditedVerses);
@@ -30,13 +31,26 @@ router.post("/getChapters",auth, bibleController.getChapters);
 router.post("/getBooksByVersion",auth, bibleController.getBooksByVersion);
 router.post("/getChaptersNo",auth, bibleController.getChaptersNo);
 router.post("/getVerseNo",auth, bibleController.getVerseNo);
+router.post("/getshortURl",auth, bibleController.getshortURl);
+router.post("/getFullURl", bibleController.getFullURl);
 
-router.post("/signUp", userController.signUp);
+
+
+// adminnn apis starts
+router.post("/loginAdmin", userController.loginAdmin);
+router.get("/getCardTemplate", bibleController.getCardTemplate);
+router.get("/getSuggestedLinks", bibleController.getSuggestedLinks);
+router.get("/getbanners", bibleController.getbanners);
+router.post("/uploadCardTemplate",upload_profile.single("file"), bibleController.uploadCardTemplate);
+router.post("/uploadsuggested_links",upload_profile.single("file"), bibleController.uploadsuggested_links);
+router.post("/updateBanners", upload_profile.fields([{name: 'sidebar_image', maxCount: 1},{name: 'small_image', maxCount: 1},{name: 'big_image', maxCount: 1}]), bibleController.updateBanners);
+
+
+router.post("/signUp", userController.signUp); 
 
 router.post("/social_login", userController.social_login);
 
 router.post("/loginUser", userController.loginUser);
-router.post("/loginAdmin", userController.loginAdmin);
 
 router.post("/get_all_users", auth, userController.get_all_users);
 

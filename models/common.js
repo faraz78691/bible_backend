@@ -23,5 +23,8 @@ module.exports = {
     const query = `SELECT * FROM tags ${where} ORDER BY id DESC`;
     return db.query(query);
  },
+ updateADToken: async (token, email) => {
+  return db.query(`update admin set token = '${token}' where email = '${email}'`);
+},
 
 };
