@@ -21,6 +21,12 @@ module.exports = {
   getSelectedColumn: async (column, table, where, ) => {
     return db.query(`select ${column} from ${table} ${where}`);
   },
+  getBookName: async (table ) => {
+    return db.query(`SELECT book_name FROM ( SELECT book_name, MIN(id) AS min_id FROM ${table} WHERE id != 0 GROUP BY book_name ) AS grouped_books ORDER BY min_id ASC;`);
+  },
+  getChaptersNo: async (table, book_name ) => {
+    return db.query(`SELECT chapter FROM ( SELECT chapter, MIN(id) AS min_id FROM ${table} WHERE book_name = '${book_name}' GROUP BY chapter ) AS grouped_chapters ORDER BY min_id ASC;`);
+  },
   filtertags: async (search) => {
     let where = ` WHERE tag_name  LIKE '%${search}%'`;
     const query = `SELECT * FROM tags ${where} ORDER BY id DESC`;

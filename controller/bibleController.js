@@ -24,7 +24,9 @@ const {
     fetchCount,
     getSelectedColumn,
     filtertags,
-    getUnionData
+    getUnionData,
+    getBookName,
+    getChaptersNo
 } = require("../models/common");
 
 
@@ -540,7 +542,7 @@ exports.getBooksByVersion = async (req, res, next) => {
     try {
         const { table_name } = req.body;
 
-        const result = await getSelectedColumn('book_name', table_name, `GROUP by book_name ORDER by id ASC`);
+        const result = await getBookName(table_name);
 
         if (result.length === 0) {
             // User not found
@@ -573,7 +575,7 @@ exports.getChaptersNo = async (req, res, next) => {
     try {
         const { table_name, book_name } = req.body;
 
-        const result = await getSelectedColumn('chapter', table_name, `where book_name = '${book_name}' GROUP by chapter ORDER by id ASC`);
+        const result = await getChaptersNo( table_name,book_name);
 
         if (result.length === 0) {
             // User not found
