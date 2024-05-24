@@ -24,6 +24,7 @@ const {
     fetchCount,
     getSelectedColumn,
     filtertags,
+    getUnionData
 } = require("../models/common");
 
 
@@ -178,7 +179,7 @@ exports.saveBibleVerses = async (req, res, next) => {
 }
 exports.saveEditedBibleVerses = async (req, res, next) => {
     try {
-        const { verse_number, verse, notes } = req.body;
+        const { verse_number, verse, notes, bg_image } = req.body;
         const user_id = req.user_id;
 
 
@@ -188,6 +189,7 @@ exports.saveEditedBibleVerses = async (req, res, next) => {
                 // password: passwordComplexity(complexityOptions),
                 verse_number: [Joi.string().empty().required()],
                 verse: [Joi.string().empty().required()],
+                bg_image: [Joi.string().empty().required()],
                 notes: [Joi.string().optional(), Joi.allow(null)]
 
             })
@@ -207,7 +209,8 @@ exports.saveEditedBibleVerses = async (req, res, next) => {
                 verse_number: verse_number,
                 verse: verse,
                 notes: notes,
-                user_id: user_id
+                user_id: user_id,
+                bg_image:bg_image
 
             };
             const result = await insertData('edited_verse', user, '');
@@ -665,11 +668,87 @@ exports.getshortURl = async (req, res, next) => {
         });
     }
 };
+exports.getEditshortURl = async (req, res, next) => {
+    try {
+        const { full_url } = req.body;
+        // const shortUrl = new ShortUniqueId({ length: 10 });
+        let shortUrl = crypto.createHash('md5').update(full_url).digest("hex")
+        console.log(shortUrl);
+        const checkShortUrl = await getData('editedurl',`where short_url = '${shortUrl}'`);
+        if(checkShortUrl.length >0){
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        }else{
+        const updated_info = {
+            full_url: full_url,
+            short_url: shortUrl
+
+        };
+        const result = await insertData('editedurl', updated_info, '');
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: shortUrl,
+            });
+        }
+    }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
 exports.getFullURl = async (req, res, next) => {
     try {
         const { short_url } = req.body;
       
-        const result = await getData('random_verse', `where short_url = '${short_url}'`);
+        const result = await getUnionData(short_url);
+
+        if (result.length === 0) {
+          
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+exports.getEditFullURl = async (req, res, next) => {
+    try {
+        const { short_url } = req.body;
+      
+        const result = await getData('editedurl', `where short_url = '${short_url}'`);
 
         if (result.length === 0) {
             // User not found

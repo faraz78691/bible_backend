@@ -32,7 +32,9 @@ router.post("/getBooksByVersion",auth, bibleController.getBooksByVersion);
 router.post("/getChaptersNo",auth, bibleController.getChaptersNo);
 router.post("/getVerseNo",auth, bibleController.getVerseNo);
 router.post("/getshortURl",auth, bibleController.getshortURl);
+router.post("/getEditshortURl",auth, bibleController.getEditshortURl);
 router.post("/getFullURl", bibleController.getFullURl);
+router.post("/getEditFullURl", bibleController.getEditFullURl);
 
 
 

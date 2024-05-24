@@ -9,6 +9,9 @@ module.exports = {
   getData: async (table, where) => {
     return db.query(`select * from ${table} ${where}`);
   },
+  getUnionData: async (short_url) => {
+    return db.query(`SELECT full_url,short_url FROM random_verse WHERE short_url = '${short_url}' UNION SELECT full_url,short_url FROM editedurl WHERE short_url = '${short_url}'`);
+  },
   deleteData: async (table, where) => {
     return db.query(`Delete from ${table} ${where}`);
   },
