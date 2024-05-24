@@ -677,8 +677,9 @@ exports.getEditshortURl = async (req, res, next) => {
         const checkShortUrl = await getData('editedurl',`where short_url = '${shortUrl}'`);
         if(checkShortUrl.length >0){
             return res.json({
-                success: false,
+                success: true,
                 message: "Data not found",
+                data: shortUrl,
             });
         }else{
         const updated_info = {
@@ -997,6 +998,36 @@ exports.getbanners = async (req, res, next) => {
     try {
 
         const result = await getData('banners', '');
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+exports.getUsers = async (req, res, next) => {
+    try {
+
+        const result = await getData('users', '');
 
         if (result.length === 0) {
             // User not found
