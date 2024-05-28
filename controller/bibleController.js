@@ -63,6 +63,37 @@ exports.getBibleBooksByVersion = async (req, res, next) => {
     }
 };
 
+exports.getAllBible= async (req, res, next) => {
+    try {
+        
+        const result = await getData("kjvbible", '');
+
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Unable to get the data",
+            });
+        } else {
+           
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
 exports.getBibleVersion = async (req, res, next) => {
     try {
         const { version_id } = req.query;
@@ -98,6 +129,46 @@ exports.getBibleVerses = async (req, res, next) => {
         const { table_name, book_name, chatperNo, verse_number } = req.body;
 
         const result = await getData(table_name, `where book_name = '${book_name}' and chapter = ${chatperNo} and verse_number = ${verse_number}`);
+        if (result.length === 0) {
+            // User not found
+            return res.json({
+                success: false,
+                message: "Data not found",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: true,
+                message: "found successfully",
+                data: result,
+            });
+        }
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+}
+
+exports.getBibleVersesByVerse = async (req, res, next) => {
+    try {
+        const { table_name, verse } = req.body;
+        console.log("working");
+        if(verse.includes(':')){
+            const wordsArray = verse.split(" ");
+            const bookName = wordsArray[0];
+            const chapterArray = wordsArray[1].split(":");
+            console.log(chapterArray);
+            var result = await getData(table_name, `where book_name = '${bookName}' and chapter = ${chapterArray[0]} and verse_number = ${chapterArray[1]}`);
+        }else{
+
+            var result = await getData(table_name, `where  verse  LIKE '%${verse}%'`);
+        }
+
         if (result.length === 0) {
             // User not found
             return res.json({
@@ -237,7 +308,7 @@ exports.saveEditedBibleVerses = async (req, res, next) => {
 exports.getBibleVerseOfTheDay = async (req, res, next) => {
     try {
 
-        const getRandonResult = await getData('random_verse', `where created_at = CURRENT_DATE`);
+        const getRandonResult = await getData('random_verse', `WHERE DATE(created_at) = CURRENT_DATE`);
 
         if (getRandonResult.length === 0) {
             const generateRandom = await getData('kjvbible', `order by rand() limit 1`);
@@ -253,7 +324,7 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
             return res.json({
                 success: true,
                 message: "found successfully",
-                data: getRandonResult[0]
+                data: generateRandom[0]
             });
         } else {
             // User found
@@ -449,7 +520,7 @@ exports.getBibleVersesByKeyword = async (req, res, next) => {
 
 
 
-        const result = await getData(table_name, `where book_name = '${book_name}' and verse  LIKE '%${keyword}%'`);
+        const result = await getData(table_name, `where  verse  LIKE '%${keyword}%'`);
         if (result.length === 0) {
             // User not found
             return res.json({
@@ -947,6 +1018,8 @@ exports.getSuggestedLinks = async (req, res, next) => {
 
 exports.updateBanners = async (req, res, next) => {
     try {
+         
+        const {sidebar_link, small_link, big_link} = req.body;
 
         let sidebar_image = false;
         let small_image = false;
@@ -968,7 +1041,10 @@ exports.updateBanners = async (req, res, next) => {
         const updated_info = {
             sidebar_image: sidebar_image ? sidebar_image : getMisc[0]?.sidebar_image,
             small_image: small_image ? small_image : getMisc[0]?.small_image,
-            big_image: big_image ? big_image : getMisc[0]?.big_image
+            big_image: big_image ? big_image : getMisc[0]?.big_image,
+            sidebar_link: sidebar_link,
+            small_link: small_link,
+            big_link: big_link
         };
         const updateHome = await updateData('banners', updated_info, 'where id = 1');
 

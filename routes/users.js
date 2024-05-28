@@ -31,15 +31,16 @@ router.post("/getChapters",auth, bibleController.getChapters);
 router.post("/getBooksByVersion",auth, bibleController.getBooksByVersion);
 router.post("/getChaptersNo",auth, bibleController.getChaptersNo);
 router.post("/getVerseNo",auth, bibleController.getVerseNo);
+router.post("/getBibleVersesByVerse",auth, bibleController.getBibleVersesByVerse);
 router.post("/getshortURl",auth, bibleController.getshortURl);
 router.post("/getEditshortURl",auth, bibleController.getEditshortURl);
 router.post("/getFullURl", bibleController.getFullURl);
 router.post("/getEditFullURl", bibleController.getEditFullURl);
 
 
-
 // adminnn apis starts
 router.post("/loginAdmin", userController.loginAdmin);
+router.get("/getAllBible", bibleController.getAllBible);
 router.get("/getCardTemplate", bibleController.getCardTemplate);
 router.get("/getSuggestedLinks", bibleController.getSuggestedLinks);
 router.get("/getbanners", bibleController.getbanners);
