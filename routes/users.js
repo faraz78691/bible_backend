@@ -19,8 +19,10 @@ router.post("/saveBibleVerses",auth, bibleController.saveBibleVerses);
 router.post("/saveEditedBibleVerses",auth, bibleController.saveEditedBibleVerses);
 router.post("/addFriends",auth, bibleController.addFriends);
 router.post("/getBibleVersesByKeyword",auth, bibleController.getBibleVersesByKeyword);
+router.post("/savedSearchesKeyword",auth, bibleController.savedSearchesKeyword);
 
 router.get("/getBibleVerseOfTheDay",auth, bibleController.getBibleVerseOfTheDay);
+router.get("/getSavedSearchesKeys",auth, bibleController.getSavedSearchesKeys);
 
 router.get("/getPastRandomVerses",auth, bibleController.getPastRandomVerses);
 router.get("/getSavedVerses",auth, bibleController.getSavedVerses);

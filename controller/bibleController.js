@@ -26,7 +26,8 @@ const {
     filtertags,
     getUnionData,
     getBookName,
-    getChaptersNo
+    getChaptersNo,
+    getDistinctData
 } = require("../models/common");
 
 
@@ -157,15 +158,22 @@ exports.getBibleVerses = async (req, res, next) => {
 exports.getBibleVersesByVerse = async (req, res, next) => {
     try {
         const { table_name, verse } = req.body;
-        console.log("working");
-        if(verse.includes(':')){
+        
+        if(verse.includes(':') && !verse.includes('-')){
             const wordsArray = verse.split(" ");
             const bookName = wordsArray[0];
             const chapterArray = wordsArray[1].split(":");
-            console.log(chapterArray);
+        
             var result = await getData(table_name, `where book_name = '${bookName}' and chapter = ${chapterArray[0]} and verse_number = ${chapterArray[1]}`);
-        }else{
-
+        }else if(verse.includes(':') && verse.includes('-')){
+            const wordsArray = verse.split(" ");
+            const bookName = wordsArray[0];
+            const chapterArray = wordsArray[1].split(":");
+            const searchverse = chapterArray[1].split("-");
+           
+            var result = await getData(table_name, `where book_name = '${bookName}' and chapter = ${chapterArray[0]} and verse_number BETWEEN ${searchverse[0]} AND ${searchverse[1]}`);
+        }
+        else{
             var result = await getData(table_name, `where  verse  LIKE '%${verse}%'`);
         }
 
@@ -173,7 +181,7 @@ exports.getBibleVersesByVerse = async (req, res, next) => {
             // User not found
             return res.json({
                 success: false,
-                message: "Data not found",
+                message: "Data not found"
             });
         } else {
             // User found
@@ -234,6 +242,52 @@ exports.saveBibleVerses = async (req, res, next) => {
 
             };
             const result = await insertData('saved_verses', user, '');
+            return res.json({
+                success: true,
+                message: "Successfully saved",
+
+            });
+        }
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+}
+exports.savedSearchesKeyword = async (req, res, next) => {
+    try {
+        const { verse } = req.body;
+        const user_id = req.user_id;
+
+        const schema = Joi.alternatives(
+            Joi.object({
+                // version: [Joi.string().empty().required()],
+                // password: passwordComplexity(complexityOptions),
+                verse: [Joi.string().empty().required()]
+            })
+        );
+        const validateResult = schema.validate(req.body);
+        if (validateResult.error) {
+            const message = result.error.details.map((i) => i.message).join(",");
+            return res.json({
+                message: validateResult.error.details[0].message,
+                error: message,
+                missingParams: validateResult.error.details[0].message,
+                status: 400,
+                success: false,
+            });
+        } else {
+            const user = {
+               
+                verse_number: verse,
+                user_id: user_id
+
+            };
+            const result = await insertData('saved_searches', user, '');
             return res.json({
                 success: true,
                 message: "Successfully saved",
@@ -332,6 +386,36 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
                 success: true,
                 message: "Found successfully",
                 data: getRandonResult[0]
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+exports.getSavedSearchesKeys = async (req, res, next) => {
+    try {
+        const user_id = req.user_id;
+        const getRandonResult = await getDistinctData('DISTINCT verse_number From saved_searches', `WHERE user_id = ${user_id}`);
+        // SELECT DISTINCT verse_number FROM saved_searches WHERE user_id = '82';
+        if (getRandonResult.length > 0) {
+
+            return res.json({
+                success: true,
+                message: "found successfully",
+                data: getRandonResult
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: false,
+                message: "Data not found",
             });
         }
     } catch (error) {
