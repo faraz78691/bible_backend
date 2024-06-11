@@ -6,6 +6,7 @@ const app = express();
 const moment = require('moment-timezone');
 const cors = require("cors");
 const http = require("http");
+const bibleController = require("./controller/bibleController");
 const { deleteAllNotificationsProfileVisits, deleteAllProfileVisits } = require("./models/users");
 
 app.use(cors());
@@ -44,6 +45,13 @@ app.get("/", (req, res) => {
   }
 });
 
+
+// Schedule the task to run at 7:00 AM every day
+cron.schedule('0 7 * * *', () => {
+// cron.schedule('*/1 * * * *', () => {
+  console.log('Running cron job at 7:00 AM');
+  bibleController.sendVerseMail();
+});
 
 app.listen(4000, function () {
   console.log("Node app is running on port 4000");

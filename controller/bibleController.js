@@ -30,6 +30,26 @@ const {
     getDistinctData
 } = require("../models/common");
 
+var transporter = nodemailer.createTransport({
+    // service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 587,
+    // secure: true,
+    auth: {
+        user: "mohdfaraz.ctinfotech@gmail.com",
+        pass: "lpwbmjbdfiynjnif",
+    },
+});
+
+const handlebarOptions = {
+    viewEngine: {
+        partialsDir: path.resolve(__dirname + "/view/"),
+        defaultLayout: false,
+    },
+    viewPath: path.resolve(__dirname + "/view/"),
+};
+
+transporter.use("compile", hbs(handlebarOptions));
 
 exports.getBibleBooksByVersion = async (req, res, next) => {
     try {
@@ -64,9 +84,9 @@ exports.getBibleBooksByVersion = async (req, res, next) => {
     }
 };
 
-exports.getAllBible= async (req, res, next) => {
+exports.getAllBible = async (req, res, next) => {
     try {
-        
+
         const result = await getData("kjvbible", '');
 
         if (result.length === 0) {
@@ -76,7 +96,7 @@ exports.getAllBible= async (req, res, next) => {
                 message: "Unable to get the data",
             });
         } else {
-           
+
             // User found
             return res.status(200).json({
                 success: true,
@@ -158,22 +178,52 @@ exports.getBibleVerses = async (req, res, next) => {
 exports.getBibleVersesByVerse = async (req, res, next) => {
     try {
         const { table_name, verse } = req.body;
-        
-        if(verse.includes(':') && !verse.includes('-')){
-            const wordsArray = verse.split(" ");
-            const bookName = wordsArray[0];
-            const chapterArray = wordsArray[1].split(":");
-        
-            var result = await getData(table_name, `where book_name = '${bookName}' and chapter = ${chapterArray[0]} and verse_number = ${chapterArray[1]}`);
-        }else if(verse.includes(':') && verse.includes('-')){
-            const wordsArray = verse.split(" ");
-            const bookName = wordsArray[0];
-            const chapterArray = wordsArray[1].split(":");
-            const searchverse = chapterArray[1].split("-");
-           
-            var result = await getData(table_name, `where book_name = '${bookName}' and chapter = ${chapterArray[0]} and verse_number BETWEEN ${searchverse[0]} AND ${searchverse[1]}`);
+
+
+        if (verse.includes(':') && !verse.includes('-')) {
+
+            const regex = /(\d+\s\w+(?:\s\w+)*)\s(\d+):(\d+)/;
+            const match = verse.match(regex);
+
+            if (match) {
+                // Extract the parts of the match
+                const part1 = match[1];
+                const part2 = match[2];
+                const part3 = match[3];
+
+                var result = await getData(table_name, `where book_name = '${part1}' and chapter = ${part2} and verse_number = ${part3}`);
+            } else {
+                const wordsArray = verse.split(" ");
+                const bookName = wordsArray[0];
+                const chapterArray = wordsArray[1].split(":");
+
+                var result = await getData(table_name, `where book_name = '${bookName}' and chapter = ${chapterArray[0]} and verse_number = ${chapterArray[1]}`);
+
+            }
+        } else if (verse.includes(':') && verse.includes('-')) {
+            const regex = /^(\d+\s\w+(?:\s\w+)*)\s(\d+):(\d+)-(\d+)$/;
+            const match = verse.match(regex);
+
+            if (match) {
+                // Extract the parts of the match
+                const part1 = match[1]; // e.g., "1 Samule"
+                const part2 = match[2]; // e.g., "3"
+                const part3 = match[3]; // e.g., "5"
+                const part4 = match[4]; // e.g., "10"
+
+
+                var result = await getData(table_name, `where book_name = '${part1}' and chapter = ${part2} and verse_number BETWEEN ${part3} AND ${part4}`);
+            } else {
+                const wordsArray = verse.split(" ");
+                const bookName = wordsArray[0];
+                const chapterArray = wordsArray[1].split(":");
+                const searchverse = chapterArray[1].split("-");
+
+                var result = await getData(table_name, `where book_name = '${bookName}' and chapter = ${chapterArray[0]} and verse_number BETWEEN ${searchverse[0]} AND ${searchverse[1]}`);
+
+            }
         }
-        else{
+        else {
             var result = await getData(table_name, `where  verse  LIKE '%${verse}%'`);
         }
 
@@ -191,6 +241,7 @@ exports.getBibleVersesByVerse = async (req, res, next) => {
                 data: result,
             });
         }
+
     } catch (error) {
 
         return res.status(500).json({
@@ -282,7 +333,7 @@ exports.savedSearchesKeyword = async (req, res, next) => {
             });
         } else {
             const user = {
-               
+
                 verse_number: verse,
                 user_id: user_id
 
@@ -337,7 +388,7 @@ exports.saveEditedBibleVerses = async (req, res, next) => {
                 verse: verse,
                 notes: notes,
                 user_id: user_id,
-                bg_image:bg_image
+                bg_image: bg_image
 
             };
             const result = await insertData('edited_verse', user, '');
@@ -730,7 +781,7 @@ exports.getChaptersNo = async (req, res, next) => {
     try {
         const { table_name, book_name } = req.body;
 
-        const result = await getChaptersNo( table_name,book_name);
+        const result = await getChaptersNo(table_name, book_name);
 
         if (result.length === 0) {
             // User not found
@@ -793,7 +844,7 @@ exports.getshortURl = async (req, res, next) => {
         const { full_url, id } = req.body;
         // const shortUrl = new ShortUniqueId({ length: 10 });
         let shortUrl = crypto.createHash('md5').update(full_url).digest("hex")
-        console.log(shortUrl);
+
         const updated_info = {
             full_url: full_url,
             short_url: shortUrl
@@ -830,37 +881,37 @@ exports.getEditshortURl = async (req, res, next) => {
         const { full_url } = req.body;
         // const shortUrl = new ShortUniqueId({ length: 10 });
         let shortUrl = crypto.createHash('md5').update(full_url).digest("hex")
-        console.log(shortUrl);
-        const checkShortUrl = await getData('editedurl',`where short_url = '${shortUrl}'`);
-        if(checkShortUrl.length >0){
+
+        const checkShortUrl = await getData('editedurl', `where short_url = '${shortUrl}'`);
+        if (checkShortUrl.length > 0) {
             return res.json({
                 success: true,
                 message: "Data not found",
                 data: shortUrl,
-            });
-        }else{
-        const updated_info = {
-            full_url: full_url,
-            short_url: shortUrl
-
-        };
-        const result = await insertData('editedurl', updated_info, '');
-
-        if (result.length === 0) {
-            // User not found
-            return res.json({
-                success: false,
-                message: "Data not found",
             });
         } else {
-            // User found
-            return res.status(200).json({
-                success: true,
-                message: "found successfully",
-                data: shortUrl,
-            });
+            const updated_info = {
+                full_url: full_url,
+                short_url: shortUrl
+
+            };
+            const result = await insertData('editedurl', updated_info, '');
+
+            if (result.length === 0) {
+                // User not found
+                return res.json({
+                    success: false,
+                    message: "Data not found",
+                });
+            } else {
+                // User found
+                return res.status(200).json({
+                    success: true,
+                    message: "found successfully",
+                    data: shortUrl,
+                });
+            }
         }
-    }
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -874,11 +925,11 @@ exports.getEditshortURl = async (req, res, next) => {
 exports.getFullURl = async (req, res, next) => {
     try {
         const { short_url } = req.body;
-      
+
         const result = await getUnionData(short_url);
 
         if (result.length === 0) {
-          
+
             // User not found
             return res.json({
                 success: false,
@@ -905,7 +956,7 @@ exports.getFullURl = async (req, res, next) => {
 exports.getEditFullURl = async (req, res, next) => {
     try {
         const { short_url } = req.body;
-      
+
         const result = await getData('editedurl', `where short_url = '${short_url}'`);
 
         if (result.length === 0) {
@@ -1102,8 +1153,8 @@ exports.getSuggestedLinks = async (req, res, next) => {
 
 exports.updateBanners = async (req, res, next) => {
     try {
-         
-        const {sidebar_link, small_link, big_link} = req.body;
+
+        const { sidebar_link, small_link, big_link } = req.body;
 
         let sidebar_image = false;
         let small_image = false;
@@ -1212,6 +1263,54 @@ exports.getUsers = async (req, res, next) => {
             message: "An internal server error occurred. Please try again later.",
             status: 500,
             error: error.message,
+        });
+    }
+};
+
+
+
+exports.sendVerseMail = async (req, res) => {
+    try {
+
+        const users = await getData('users', '');
+
+        const getRandonResult = await getData('random_verse', `WHERE DATE(created_at) = CURRENT_DATE`);
+        console.log("users", getRandonResult);
+        if (users.length == 0) {
+          
+        }
+        for (const items of users) {
+            let mailOptions = {
+                from: "mohdfaraz.ctinfotech@gmail.com",
+                to: items.email,
+                subject: "Verse of the day",
+                template: "verse_of_the_day",
+                context: {
+                    msg: getRandonResult[0]
+                },
+            };
+            transporter.sendMail(mailOptions, async function (error, info) {
+                if (error) {
+                    return res.json({
+                        success: false,
+                        status: 400,
+                        message: "Mail Not delivered",
+                    });
+                } else {
+
+                 
+                }
+            });
+
+        }
+
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            success: false,
+            message: "Internal server error",
+            status: 500,
+            error: error,
         });
     }
 };
