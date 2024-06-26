@@ -14,6 +14,7 @@ const axios = require("axios");
 require("moment-timezone");
 const config = require("../config");
 const logError = require('../logger/errorHandler'); // Import the logError function
+const sgMail = require('@sendgrid/mail')
 
 
 const {
@@ -88,6 +89,7 @@ exports.getAllBible = async (req, res, next) => {
     try {
 
         const result = await getData("kjvbible", '');
+       
 
         if (result.length === 0) {
             // User not found
@@ -414,7 +416,24 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
     try {
 
         const getRandonResult = await getData('random_verse', `WHERE DATE(created_at) = CURRENT_DATE`);
-
+        const msg = {
+            to: 'aarif.ctinfotech@gmail.com', // Change to your recipient
+            from: 'aarif.ctinfotech@gmail.com', // Change to your verified sender
+            subject: 'Sending with SendGrid is Fun',
+            text: 'and easy to do anywhere, even with Node.js',
+            html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+          }
+          
+          sgMail
+            .send(msg)
+            .then((response) => {
+                console.log(response);
+              console.log(response[0].statusCode)
+              console.log(response[0].headers)
+            })
+            .catch((error) => {
+              console.error("error", error)
+            })
         if (getRandonResult.length === 0) {
             const generateRandom = await getData('kjvbible', `order by rand() limit 1`);
 
