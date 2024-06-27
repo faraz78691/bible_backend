@@ -89,7 +89,7 @@ exports.getAllBible = async (req, res, next) => {
     try {
 
         const result = await getData("kjvbible", '');
-       
+
 
         if (result.length === 0) {
             // User not found
@@ -416,24 +416,7 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
     try {
 
         const getRandonResult = await getData('random_verse', `WHERE DATE(created_at) = CURRENT_DATE`);
-        const msg = {
-            to: 'aarif.ctinfotech@gmail.com', // Change to your recipient
-            from: 'aarif.ctinfotech@gmail.com', // Change to your verified sender
-            subject: 'Sending with SendGrid is Fun',
-            text: 'and easy to do anywhere, even with Node.js',
-            html: '<strong>and easy to do anywhere, even with Node.js</strong>',
-          }
-          
-          sgMail
-            .send(msg)
-            .then((response) => {
-                console.log(response);
-              console.log(response[0].statusCode)
-              console.log(response[0].headers)
-            })
-            .catch((error) => {
-              console.error("error", error)
-            })
+      
         if (getRandonResult.length === 0) {
             const generateRandom = await getData('kjvbible', `order by rand() limit 1`);
 
@@ -458,6 +441,63 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
                 data: getRandonResult[0]
             });
         }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+exports.sendEmail = async (req, res, next) => {
+    try {
+        const { html, to } = req.body;
+        const emailArray = to.split(',').map(email => email.trim());
+        console.log("emailArray",emailArray);
+        const decodedHtml = decodeURIComponent(html)
+        
+    
+
+        if (to.length > 0) {
+            for (const emails of emailArray) {
+                console.log("emails=========>>>>>>>>>>", emails);
+                let mailOptions = {
+                    from: "mohdfaraz.ctinfotech@gmail.com",
+                    to: emails,
+                    subject: "Verse of the day",
+                    template: "verseMail",
+                    context: {
+                        msg: decodedHtml,
+                    }
+        
+                };
+                transporter.sendMail(mailOptions, async function (error, info) {
+                    if (error) {
+                        console.log(error);
+                        return res.json({
+                            success: false,
+                            status: 400,
+                            message: "Mail Not delivered",
+                        });
+                    } else {
+                        // return res.json({
+                        //     success: true,
+                        //     message: "Mail send successfully",
+                        //     status: 200,
+                        // });
+                    }
+                });
+              
+            }
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Mail send successfully",
+        
+        });
+     
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -1296,7 +1336,7 @@ exports.sendVerseMail = async (req, res) => {
         const getRandonResult = await getData('random_verse', `WHERE DATE(created_at) = CURRENT_DATE`);
         console.log("users", getRandonResult);
         if (users.length == 0) {
-          
+
         }
         for (const items of users) {
             let mailOptions = {
@@ -1317,7 +1357,7 @@ exports.sendVerseMail = async (req, res) => {
                     });
                 } else {
 
-                 
+
                 }
             });
 

@@ -47,6 +47,7 @@ router.get("/getCardTemplate", bibleController.getCardTemplate);
 router.get("/getSuggestedLinks", bibleController.getSuggestedLinks);
 router.get("/getbanners", bibleController.getbanners);
 router.get("/getUsers", bibleController.getUsers);
+router.post("/sendEmail", bibleController.sendEmail);
 router.post("/uploadCardTemplate",upload_profile.single("file"), bibleController.uploadCardTemplate);
 router.post("/uploadsuggested_links",upload_profile.single("file"), bibleController.uploadsuggested_links);
 router.post("/updateBanners", upload_profile.fields([{name: 'sidebar_image', maxCount: 1},{name: 'small_image', maxCount: 1},{name: 'big_image', maxCount: 1}]), bibleController.updateBanners);
