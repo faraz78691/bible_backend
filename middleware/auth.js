@@ -15,7 +15,8 @@ const auth = async (req, res, next) => {
       const user = await fetchUserById(verifyUser.data.id);
       console.log(user);
       if (user !== null) {
-        req.user_id = user[0].id
+        req.user_id = user[0].id;
+        req.userName = user[0].first_name + ' ' + user[0].last_name;
         next();
       }
       else {

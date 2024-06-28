@@ -17,11 +17,18 @@
     }
 
     h2 {
-        font-size: 32px;
+        font-size: 36px;
         font-weight: 600;
         font-family: "Roboto", sans-serif;
     }
-
+    h3 {
+        font-size: 28px;
+        font-weight: 600;
+        font-family: "Roboto", sans-serif;
+    }
+h4{
+    font-size: 26px;
+}
     p {
         font-size: 16px;
         font-family: "Poppins", sans-serif;
@@ -33,19 +40,17 @@
     <div
         style="width: 100%; max-width: 600px;  padding: 15px;  background:#fff; border-radius:10px; margin-left:auto; margin-right:auto; ">
         <h4 style="font-size: 24px; margin-bottom:15px; font-weight:600">Verse of The Day</h4>
+
+          {{{msg}}}
         <table style="width: 100%; padding-block:90px">
+          
             <tr>
                 <td>
-                  {{{msg}}}
-                </td>
-            </tr>
-            <tr>
-                <td>
+                    <p style="margin: 20px 0px">Regards {{name}}</p>
                     <p style="margin: 20px 0px">Cheers,<br />Multi Version Bible Team</p>
                 </td>
             </tr>
         </table>
-
 
     </div>
 

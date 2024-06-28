@@ -416,7 +416,7 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
     try {
 
         const getRandonResult = await getData('random_verse', `WHERE DATE(created_at) = CURRENT_DATE`);
-      
+
         if (getRandonResult.length === 0) {
             const generateRandom = await getData('kjvbible', `order by rand() limit 1`);
 
@@ -453,13 +453,13 @@ exports.getBibleVerseOfTheDay = async (req, res, next) => {
 };
 exports.sendEmail = async (req, res, next) => {
     try {
-        const { html, to } = req.body;
+        const { html, to, table_name } = req.body;
+        const userName = req.userName;
+        console.log("userName",userName);
+        console.log("userName",html);
         const emailArray = to.split(',').map(email => email.trim());
-        console.log("emailArray",emailArray);
-        const decodedHtml = decodeURIComponent(html)
-        
-    
-
+      if(table_name =='saved'){
+        const decodedHtml = JSON.parse(html);
         if (to.length > 0) {
             for (const emails of emailArray) {
                 console.log("emails=========>>>>>>>>>>", emails);
@@ -467,11 +467,12 @@ exports.sendEmail = async (req, res, next) => {
                     from: "mohdfaraz.ctinfotech@gmail.com",
                     to: emails,
                     subject: "Verse of the day",
-                    template: "verseMail",
+                    template: "verse_of_the_day",
                     context: {
-                        msg: decodedHtml,
+                        msg: decodedHtml[0],
+                        name:userName
                     }
-        
+  
                 };
                 transporter.sendMail(mailOptions, async function (error, info) {
                     if (error) {
@@ -489,15 +490,89 @@ exports.sendEmail = async (req, res, next) => {
                         // });
                     }
                 });
-              
+  
             }
         }
+    }else if(table_name =='edited'){
+        const decodedHtml = decodeURIComponent(html);
+        if (to.length > 0) {
+            for (const emails of emailArray) {
+                console.log("emails=========>>>>>>>>>>", emails);
+                let mailOptions = {
+                    from: "mohdfaraz.ctinfotech@gmail.com",
+                    to: emails,
+                    subject: "Verse of the day",
+                    template: "verseMail",
+                    context: {
+                        msg: decodedHtml,
+                        name:userName
+                    }
+  
+                };
+                transporter.sendMail(mailOptions, async function (error, info) {
+                    if (error) {
+                        console.log(error);
+                        return res.json({
+                            success: false,
+                            status: 400,
+                            message: "Mail Not delivered",
+                        });
+                    } else {
+                        // return res.json({
+                        //     success: true,
+                        //     message: "Mail send successfully",
+                        //     status: 200,
+                        // });
+                    }
+                });
+  
+            }
+        }
+    }else{
+            const decodedHtml = decodeURIComponent(html);
+            if (to.length > 0) {
+                for (const emails of emailArray) {
+                    console.log("emails=========>>>>>>>>>>", emails);
+                    let mailOptions = {
+                        from: "mohdfaraz.ctinfotech@gmail.com",
+                        to: emails,
+                        subject: "Verse of the day",
+                        template: "verseMail",
+                        context: {
+                            msg: decodedHtml,
+                        }
+      
+                    };
+                    transporter.sendMail(mailOptions, async function (error, info) {
+                        if (error) {
+                            console.log(error);
+                            return res.json({
+                                success: false,
+                                status: 400,
+                                message: "Mail Not delivered",
+                            });
+                        } else {
+                            // return res.json({
+                            //     success: true,
+                            //     message: "Mail send successfully",
+                            //     status: 200,
+                            // });
+                        }
+                    });
+      
+                }
+            }
+
+        }
+        
+
+
         return res.status(200).json({
             success: true,
             message: "Mail send successfully",
-        
+
         });
-     
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -1370,6 +1445,75 @@ exports.sendVerseMail = async (req, res) => {
             message: "Internal server error",
             status: 500,
             error: error,
+        });
+    }
+};
+
+
+
+exports.deleteVerses = async (req, res, next) => {
+    try {
+        const { ids, table_name } = req.body;
+        if (table_name == 'edited') {
+            var deleteVerse = await deleteData('edited_verse', `WHERE id IN (${ids})`);
+
+        } else if (table_name == 'saved') {
+            var deleteVerse = await deleteData('saved_verses', `WHERE id IN (${ids})`);
+        }else if(table_name =='freinds'){
+            var deleteVerse = await deleteData('friends_list', `WHERE id IN (${ids})`);
+        }
+
+        if (deleteVerse.affectedRows > 0) {
+            // User not found
+            return res.json({
+                success: true,
+                message: "Deleted Successfully",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: false,
+                message: "failed to delete"
+            });
+        }
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
+        });
+    }
+};
+
+exports.deleteTempalte = async (req, res, next) => {
+    try {
+        const { ids } = req.body;
+      
+            var deleteVerse = await deleteData('card_template', `WHERE id IN (${ids})`);
+        
+
+        if (deleteVerse.affectedRows > 0) {
+            // User not found
+            return res.json({
+                success: true,
+                message: "Deleted Successfully",
+            });
+        } else {
+            // User found
+            return res.status(200).json({
+                success: false,
+                message: "failed to delete"
+            });
+        }
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "An internal server error occurred. Please try again later.",
+            status: 500,
+            error: error.message,
         });
     }
 };
